@@ -18,6 +18,27 @@ pnpm dev                    # http://localhost:3000
 
 CI (`.github/workflows/ci.yml`) runs typecheck, lint, unit + E2E tests, and build against a Postgres service container with dev OTP (no MSG91).
 
+## Repository setup (personal GitHub)
+
+This repo has **no `origin` remote** by default. Use your **personal** GitHub account — not an org/work account — when you create the remote.
+
+1. Create an empty repo on GitHub (e.g. `github.com/YOUR_USER/vivahnimantran`) — **do not** add a README or `.gitignore` (this repo already has them).
+2. Point `gh` at your personal account if needed:
+   ```bash
+   gh auth login          # pick your personal GitHub user
+   gh auth status         # confirm login is YOUR_USER, not a work org
+   ```
+3. Add the remote and push (you run these — agent will not push without explicit ask):
+   ```bash
+   git remote add origin git@github.com:YOUR_USER/vivahnimantran.git
+   git push -u origin master
+   ```
+   Use `main` instead of `master` if you prefer; CI listens to both branch names.
+
+**Local checks before push:** `pnpm typecheck && pnpm lint && pnpm test` (E2E needs Postgres + `.env`).
+
+Optional: [Trunk](https://docs.trunk.io) linters — config in `.trunk/trunk.yaml`; run `trunk check` locally.
+
 ## Branding
 The entire product brand lives in **`src/config/brand.ts`** + `public/brand/*`. Rebrand = edit that one file. Never hardcode the product name, colors, or domain in components (enforced in review).
 
