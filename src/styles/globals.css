@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — doc 05 §1 (foundation).
+ * Brand-level defaults; per-template palettes re-map the --t-* vars at runtime
+ * via ThemeProvider (one source of truth, no preview/published drift).
+ */
+:root {
+  /* color (brand-level) */
+  --bg: #0a0a0a;
+  --surface: #14110d;
+  --gold: #c9a24b;
+  --gold-dim: #8a6f33;
+  --maroon: #7a1f2b;
+  --text: #f3ece0;
+  --muted: #b9ad97;
+  --success: #3fae6b;
+
+  /* template palette vars (default to brand; ThemeProvider overrides) */
+  --t-bg: var(--bg);
+  --t-surface: var(--surface);
+  --t-primary: var(--maroon);
+  --t-accent: var(--gold);
+  --t-text: var(--text);
+  --t-muted: var(--muted);
+
+  /* typography — --font-*-loaded are injected by next/font in the root layout */
+  --font-display: var(--font-display-loaded), "Cormorant Garamond", Georgia, serif;
+  --font-ui: var(--font-ui-loaded), "Inter", system-ui, sans-serif;
+
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
+
+/* Light/dark for builder + dashboard chrome only (invites stay dark-cinematic). */
+:root[data-chrome="light"] {
+  --chrome-bg: #faf7f1;
+  --chrome-surface: #ffffff;
+  --chrome-text: #1a1714;
+  --chrome-muted: #6b6256;
+  --chrome-border: #e7ddcc;
+}
+:root,
+:root[data-chrome="dark"] {
+  --chrome-bg: #0f0d0a;
+  --chrome-surface: #181410;
+  --chrome-text: #f3ece0;
+  --chrome-muted: #b9ad97;
+  --chrome-border: #2a2218;
+}
+
+/* Map tokens into Tailwind v4's theme so `bg-bg`, `text-gold`, etc. work. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-maroon: var(--maroon);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-success: var(--success);
+
+  --color-chrome-bg: var(--chrome-bg);
+  --color-chrome-surface: var(--chrome-surface);
+  --color-chrome-text: var(--chrome-text);
+  --color-chrome-muted: var(--chrome-muted);
+  --color-chrome-border: var(--chrome-border);
+
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--chrome-bg);
+  color: var(--chrome-text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

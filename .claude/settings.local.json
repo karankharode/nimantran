@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm -v)",
+      "Bash(echo \"pnpm: $\\(pnpm -v 2>/dev/null || echo MISSING\\)\")",
+      "Bash(npm -v)",
+      "Bash(echo \"npm: $\\(npm -v 2>/dev/null || echo MISSING\\)\")",
+      "Bash(git --version)",
+      "Bash(corepack enable *)",
+      "Bash(corepack prepare *)",
+      "Bash(echo \"pnpm now: $\\(pnpm -v || echo STILL-MISSING\\)\")",
+      "Bash(/Users/Admin/.nvm/versions/node/v22.18.0/bin/pnpm -v)",
+      "Bash(python3 -)",
+      "Bash(node -e \"const p=require\\('./node_modules/eslint-config-next/package.json'\\); console.log\\(JSON.stringify\\(p.exports||p.main,null,1\\)\\); console.log\\('version',p.version\\)\")",
+      "Bash(node --input-type=module -e ' *)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -o /tmp/home.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3210/)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /tmp/login.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3210/login)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} -> %{redirect_url}\\\\n\" http://localhost:3210/dashboard)",
+      "Bash(docker info *)",
+      "Read(//opt/homebrew/opt/**)",
+      "Bash(PGBIN=/opt/homebrew/opt/postgresql@16/bin *)"
+    ]
+  }
+}

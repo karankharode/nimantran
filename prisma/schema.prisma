@@ -1,0 +1,371 @@
+// Nimantran — Prisma schema. See docs/02-data-model.md for rationale.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Identity ----------
+model User {
+  id           String          @id @default(cuid())
+  phone        String          @unique
+  name         String?
+  email        String?         @unique
+  locale       String          @default("en-IN")
+  createdAt    DateTime        @default(now())
+  invitations  Invitation[]
+  reports      WeddingReport[]
+  payments     Payment[]
+  subscription Subscription?
+  entitlements Entitlement[]
+}
+
+model OtpChallenge {
+  id         String     @id @default(cuid())
+  phone      String
+  codeHash   String
+  channel    OtpChannel @default(SMS)
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([phone])
+}
+
+enum OtpChannel {
+  SMS
+  WHATSAPP
+}
+
+// ---------- Templates (catalog; definitions in code, see docs/06) ----------
+model Template {
+  id          String       @id
+  name        String
+  faith       String?
+  region      String?
+  basePrice   Int
+  price       Int
+  isCustom    Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  invitations Invitation[]
+}
+
+// ---------- Invitation (aggregate root) ----------
+model Invitation {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  slug          String           @unique
+  templateId    String
+  template      Template         @relation(fields: [templateId], references: [id])
+  status        InvitationStatus @default(DRAFT)
+  paymentStatus PaymentStatus    @default(UNPAID)
+  displayOrder  NameOrder        @default(BRIDE_GROOM)
+  themeSettings Json?
+  revision      Int              @default(0)
+  publishedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  content    InvitationContent?
+  events     Event[]
+  story      StorySection?
+  gallery    GalleryItem[]
+  infoCards  InfoCard[]
+  gifts      GiftDetails?
+  rsvpConfig RsvpConfig?
+  rsvps      RsvpResponse[]
+  wishes     Wish[]
+  music      MusicConfig?
+  payments   Payment[]
+  views      AnalyticsEvent[]
+  cardUpload CardUpload?
+  intake     IntakeSession[]
+
+  @@index([userId])
+}
+
+enum InvitationStatus {
+  DRAFT
+  PUBLISHED
+  OFFLINE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum NameOrder {
+  BRIDE_GROOM
+  GROOM_BRIDE
+}
+
+model InvitationContent {
+  invitationId    String     @id
+  invitation      Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  brideName       String?
+  groomName       String?
+  weddingDate     DateTime?
+  city            String?
+  hashtag         String?
+  openingBlessing String?
+  brideFather     String?
+  brideMother     String?
+  groomFather     String?
+  groomMother     String?
+  sectionsEnabled Json
+  data            Json
+}
+
+model Event {
+  id              String     @id @default(cuid())
+  invitationId    String
+  invitation      Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  type            String
+  title           String
+  icon            String?
+  location        String?
+  mapsUrl         String?
+  description     String?
+  datetime        DateTime?
+  order           Int        @default(0)
+  calendarEnabled Boolean    @default(true)
+  enabled         Boolean    @default(true)
+
+  @@index([invitationId])
+}
+
+model StorySection {
+  invitationId       String     @id
+  invitation         Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  included           Boolean    @default(true)
+  personalityAnswers Json?
+  generatedTags      String[]
+  storyText          String?
+}
+
+model GalleryItem {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  url          String
+  slot         Int
+  order        Int        @default(0)
+
+  @@index([invitationId])
+}
+
+model InfoCard {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  heading      String
+  body         String?
+  order        Int        @default(0)
+  enabled      Boolean    @default(true)
+
+  @@index([invitationId])
+}
+
+model GiftDetails {
+  invitationId  String     @id
+  invitation    Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  enabled       Boolean    @default(false)
+  heading       String?
+  note          String?
+  upiId         String?
+  registryLinks Json?
+}
+
+model RsvpConfig {
+  invitationId    String     @id
+  invitation      Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  enabled         Boolean    @default(true)
+  mode            RsvpMode   @default(NATIVE)
+  heading         String?
+  intro           String?
+  whatsappNumber  String?
+  googleFormUrl   String?
+  customQuestions Json?
+}
+
+enum RsvpMode {
+  WHATSAPP
+  GOOGLEFORM
+  NATIVE
+}
+
+// RsvpResponse links to Invitation (RsvpConfig is 1:1 with Invitation, so
+// responses are reachable via invitation.rsvps + invitation.rsvpConfig).
+model RsvpResponse {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  guestName    String
+  phone        String?
+  attending    Boolean
+  guestCount   Int        @default(1)
+  message      String?
+  answers      Json?
+  createdAt    DateTime   @default(now())
+
+  @@index([invitationId])
+}
+
+model Wish {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  name         String
+  message      String
+  approved     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+
+  @@index([invitationId])
+}
+
+model MusicConfig {
+  invitationId String     @id
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  enabled      Boolean    @default(false)
+  trackId      String?
+}
+
+// ---------- Payments & entitlements ----------
+model Payment {
+  id           String       @id @default(cuid())
+  invitationId String?
+  invitation   Invitation?  @relation(fields: [invitationId], references: [id])
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  amount       Int
+  currency     String       @default("INR")
+  provider     String       @default("razorpay")
+  providerRef  String?
+  kind         PaymentKind  @default(PUBLISH_FEE)
+  status       PaymentState @default(CREATED)
+  createdAt    DateTime     @default(now())
+
+  @@index([userId])
+}
+
+enum PaymentKind {
+  PUBLISH_FEE
+  CUSTOM_TEMPLATE
+  ADDON
+}
+
+enum PaymentState {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+model Subscription {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id])
+  plan             String
+  provider         String    @default("razorpay")
+  providerRef      String?
+  status           SubStatus @default(CREATED)
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+}
+
+enum SubStatus {
+  CREATED
+  ACTIVE
+  PAUSED
+  HALTED
+  CANCELLED
+  EXPIRED
+}
+
+model Entitlement {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  key       String
+  value     Json?
+  expiresAt DateTime?
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+// ---------- Analytics ----------
+model AnalyticsEvent {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  type         String
+  ref          String?
+  ts           DateTime   @default(now())
+
+  @@index([invitationId, ts])
+}
+
+// ---------- AI Wedding Report ----------
+model WeddingReport {
+  id            String       @id @default(cuid())
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+  shareId       String       @unique @default(uuid())
+  inputs        Json
+  generatedJson Json
+  status        ReportStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATING
+  READY
+  FAILED
+}
+
+// ---------- NEW: invitation-card OCR intake ----------
+model CardUpload {
+  invitationId String     @id
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  fileUrl      String
+  status       OcrStatus  @default(UPLOADED)
+  extracted    Json?
+  confidence   Json?
+  createdAt    DateTime   @default(now())
+}
+
+enum OcrStatus {
+  UPLOADED
+  PROCESSING
+  EXTRACTED
+  FAILED
+}
+
+model IntakeSession {
+  id           String       @id @default(cuid())
+  invitationId String?
+  invitation   Invitation?  @relation(fields: [invitationId], references: [id])
+  userId       String?
+  answers      Json
+  aiDraft      Json?
+  status       IntakeStatus @default(STARTED)
+  createdAt    DateTime     @default(now())
+}
+
+enum IntakeStatus {
+  STARTED
+  EXTRACTED
+  DRAFTED
+  CONFIRMED
+}
