@@ -10,6 +10,14 @@ pnpm db:migrate             # apply Prisma schema to Postgres
 pnpm dev                    # http://localhost:3000
 ```
 
+## Deploy (preview / staging)
+
+**Vercel (recommended for Next.js):** import the repo, set `DATABASE_URL` (Neon Postgres), `AUTH_SECRET`, and optional `SENTRY_*` / `NEXT_PUBLIC_SENTRY_DSN`. Build command `pnpm build`, install `pnpm install`. Run `prisma migrate deploy` as a build step or one-off after first deploy. Redis (`REDIS_URL`) is optional in dev — production should use Upstash.
+
+**Render:** Web Service, Node 22, build `pnpm install && pnpm db:generate && pnpm exec prisma migrate deploy && pnpm build`, start `pnpm start`. Add a managed Postgres instance and wire `DATABASE_URL`. Bind is automatic on `$PORT`.
+
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, unit + E2E tests, and build against a Postgres service container with dev OTP (no MSG91).
+
 ## Branding
 The entire product brand lives in **`src/config/brand.ts`** + `public/brand/*`. Rebrand = edit that one file. Never hardcode the product name, colors, or domain in components (enforced in review).
 

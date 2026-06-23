@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" fill="none" role="img" aria-label="Brand logo">
+  <rect width="240" height="48" fill="#0a0a0a"/>
+  <circle cx="24" cy="24" r="18" stroke="#c9a24b" stroke-width="1.5"/>
+  <path d="M24 12v24M16 20h16" stroke="#c9a24b" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="52" y="31" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="600" fill="#f3ece0" letter-spacing="0.04em">Nimantran</text>
+  <text x="52" y="42" font-family="Georgia, serif" font-size="10" fill="#c9a24b" letter-spacing="0.2em">INVITATION</text>
+</svg>
