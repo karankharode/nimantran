@@ -27,7 +27,7 @@ CI runs the same gate on push/PR (see `.github/workflows/ci.yml`).
 
 ## Pull requests
 
-1. Branch from `master` (or `main`).
+1. Branch from `main`.
 2. Keep scope to one phase/feature.
 3. Ensure CI would pass locally.
 4. No force-push to default branch.
